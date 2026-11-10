@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './components/Header.jsx'
 import Footer from './components/Footer.jsx'
 import Catalog from './pages/Catalog.jsx'
@@ -7,12 +7,12 @@ import ProfilePage from './pages/ProfilePage.jsx'
 import CreateGunPage from './pages/CreateGunPage.jsx'
 import EditGunPage from './pages/EditGunPage.jsx'
 import GunDetail from './components/gun/GunDetail.jsx'
-import About from './pages/About.jsx'
-import Contact from './pages/Contact.jsx'
 import PWABadge from './components/PWABadge.jsx'
 import ConfirmModal from './components/modals/ConfirmModal.jsx'
 import SplashScreen from './components/common/SplashScreen.jsx'
 import gunService from './services/gunService.js'
+import GUNS_LOCAL from './data/guns.js'
+import { archiveGun } from './utils/archiveStorage.js'
 import './App.css'
 
 function App() {
@@ -21,12 +21,45 @@ function App() {
   const [mode, setMode] = useState('list') // 'list' | 'create' | 'edit' | 'detail'
   const [selectedGun, setSelectedGun] = useState(null)
   const [editingGun, setEditingGun] = useState(null)
+  const [activeDraftId, setActiveDraftId] = useState('create')
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleting, setDeleting] = useState(false)
+
+  // 6.6.1 Direct Sharelink URL detection (?gun=<id>)
+  useEffect(() => {
+    const handleUrlDirectLink = async () => {
+      const searchParams = new URLSearchParams(window.location.search)
+      const directGunId = searchParams.get('gun')
+
+      if (directGunId) {
+        setShowSplash(false) // immediately show product if opened via sharelink
+        try {
+          const res = await gunService.getGunById(directGunId)
+          if (res && res.data) {
+            setSelectedGun(res.data)
+            setMode('detail')
+            return
+          }
+        } catch {
+          // Fallback to local guns lookup
+          const localMatch = GUNS_LOCAL.find(
+            (g, i) => String(g.id || `local-${i}`) === String(directGunId) || g.name === directGunId,
+          )
+          if (localMatch) {
+            setSelectedGun({ ...localMatch, id: localMatch.id || directGunId })
+            setMode('detail')
+          }
+        }
+      }
+    }
+
+    handleUrlDirectLink()
+  }, [])
 
   // Unified navigation handler
   const handleNavigate = (target, payload) => {
     if (target === 'Create') {
+      setActiveDraftId(typeof payload === 'string' ? payload : 'create')
       setMode('create')
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else if (target === 'Edit') {
@@ -37,6 +70,13 @@ function App() {
       setSelectedGun(payload)
       setMode('detail')
       window.scrollTo({ top: 0, behavior: 'smooth' })
+
+      // Update URL query parameter for sharing without reloading
+      if (payload && (payload.id || payload.name)) {
+        const url = new URL(window.location)
+        url.searchParams.set('gun', payload.id || payload.name)
+        window.history.replaceState({}, '', url.toString())
+      }
     } else {
       // Tab change
       setTab(target)
@@ -44,6 +84,11 @@ function App() {
       setSelectedGun(null)
       setEditingGun(null)
       window.scrollTo({ top: 0, behavior: 'smooth' })
+
+      // Clean URL if navigating away
+      const url = new URL(window.location)
+      url.searchParams.delete('gun')
+      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''))
     }
   }
 
@@ -51,6 +96,18 @@ function App() {
     setMode('list')
     setSelectedGun(null)
     setEditingGun(null)
+
+    // Remove ?gun from URL
+    const url = new URL(window.location)
+    url.searchParams.delete('gun')
+    window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''))
+  }
+
+  // Soft delete / archive handler
+  const handleArchiveGun = (gun) => {
+    archiveGun(gun)
+    handleBackToList()
+    setTab('Catalog')
   }
 
   return (
@@ -69,6 +126,7 @@ function App() {
         {/* Sub-page views */}
         {mode === 'create' && (
           <CreateGunPage
+            initialDraftId={activeDraftId}
             onBack={handleBackToList}
             onSuccess={() => {
               handleBackToList()
@@ -95,6 +153,7 @@ function App() {
             onBack={handleBackToList}
             onEdit={(g) => handleNavigate('Edit', g)}
             onDelete={(g) => setDeleteTarget(g)}
+            onArchive={handleArchiveGun}
           />
         )}
 
@@ -113,10 +172,11 @@ function App() {
               />
             )}
             {tab === 'Profile' && (
-              <ProfilePage onReplaySplash={() => setShowSplash(true)} />
+              <ProfilePage
+                onReplaySplash={() => setShowSplash(true)}
+                onNavigate={(dest, payload) => handleNavigate(dest, payload)}
+              />
             )}
-            {tab === 'About' && <About />}
-            {tab === 'Contact' && <Contact />}
           </>
         )}
       </main>

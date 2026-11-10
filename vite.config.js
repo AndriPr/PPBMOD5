@@ -25,6 +25,39 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
+        runtimeCaching: [
+          {
+            // Cache images from Supabase Storage or external CDNs (CacheFirst -> disk cache)
+            urlPattern: ({ request }) => request.destination === 'image',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-disk-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            // Cache REST API queries (NetworkFirst with fallback to cache)
+            urlPattern: /^https:\/\/.*\/rest\/v1\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-api-cache',
+              networkTimeoutSeconds: 4,
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 24 * 60 * 60, // 1 Day
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
       },
     }),
   ],

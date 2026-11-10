@@ -22,12 +22,10 @@ import {
 import ConfirmModal from '../components/modals/ConfirmModal'
 
 /**
- * EditGunPage — Edit an existing weapon / hardware item.
- * Supports updating specs, steps, image replacement, and draft management.
+ * EditGunPage — Edit an existing weapon / hardware item with multi-image support (Task 6.6.7).
  */
 export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
   const targetId = gunId || gun?.id
-
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState('')
@@ -45,9 +43,8 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
     is_featured: false,
   })
 
-  const [currentImageUrl, setCurrentImageUrl] = useState('')
-  const [imageFile, setImageFile] = useState(null)
-  const [imagePreview, setImagePreview] = useState(null)
+  // Multi-image state (Task 6.6.7)
+  const [images, setImages] = useState([])
   const [uploading, setUploading] = useState(false)
 
   // Specs & Steps
@@ -64,8 +61,6 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
       try {
         setLoading(true)
         setError('')
-
-        // If gun was passed directly and has full details, use it; else fetch from API
         let data = gun
         if (!data || !data.ingredients || !data.steps) {
           if (targetId && !String(targetId).startsWith('local-')) {
@@ -88,7 +83,11 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
             servings: data.servings || 1,
             is_featured: Boolean(data.is_featured),
           })
-          setCurrentImageUrl(data.image_url || data.image || '/guns/pistol.svg')
+
+          const initImages = Array.isArray(data.images) && data.images.length > 0
+            ? data.images
+            : [data.image_url || data.image || '/guns/pistol.svg']
+          setImages(initImages)
 
           if (data.ingredients && data.ingredients.length > 0) {
             setSpecs(data.ingredients.map((ing) => ({
@@ -107,7 +106,6 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
           } else {
             setSteps(['Standard manufacturer maintenance and cleaning protocol.'])
           }
-
         } else {
           setError('Hardware record could not be loaded.')
         }
@@ -121,7 +119,6 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
     if (targetId) {
       fetchGun()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetId])
 
   // Draft operations
@@ -131,8 +128,8 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
       if (draft.formData) setFormData(draft.formData)
       if (draft.specs) setSpecs(draft.specs)
       if (draft.steps) setSteps(draft.steps)
-      if (draft.imagePreview) {
-        setImagePreview(draft.imagePreview)
+      if (Array.isArray(draft.images) && draft.images.length > 0) {
+        setImages(draft.images)
       }
       setShowDraftModal(false)
       setSuccessMsg('Saved draft restored.')
@@ -151,7 +148,8 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
       formData,
       specs,
       steps,
-      imagePreview: imagePreview || currentImageUrl,
+      images,
+      imagePreview: images[0] || '',
     }
     const saved = saveDraft(draftData, targetId)
     if (saved) {
@@ -162,47 +160,49 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
     }
   }
 
-  // Handle new image file
-  const handleImageChange = (e) => {
-    const file = e.target.files[0]
-    if (!file) return
+  // Handle new image files upload (Task 6.6.7)
+  const handleAddMultipleFiles = async (e) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError('File size exceeds 5MB limit.')
-      return
+    setUploading(true)
+    const newUrls = []
+    for (const f of files) {
+      try {
+        const res = await uploadService.uploadImage(f)
+        if (res.success && res.data?.url) {
+          newUrls.push(res.data.url)
+        } else {
+          newUrls.push(URL.createObjectURL(f))
+        }
+      } catch {
+        newUrls.push(URL.createObjectURL(f))
+      }
     }
 
-    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-    if (!allowed.includes(file.type)) {
-      setError('Allowed formats: .jpg, .jpeg, .png, .webp')
-      return
-    }
-
-    setImageFile(file)
-    setImagePreview(URL.createObjectURL(file))
-    setError('')
+    setImages((prev) => [...prev, ...newUrls])
+    setUploading(false)
+    e.target.value = ''
+    setSuccessMsg('Gallery updated with new image(s).')
+    setTimeout(() => setSuccessMsg(''), 3000)
   }
 
-  const handleUploadNewImage = async () => {
-    if (!imageFile) return
-    try {
-      setUploading(true)
-      const res = await uploadService.uploadImage(imageFile)
-      if (res.success && res.data?.url) {
-        setCurrentImageUrl(res.data.url)
-        setImageFile(null)
-        setImagePreview(null)
-        setSuccessMsg('New image uploaded successfully.')
-        setTimeout(() => setSuccessMsg(''), 3000)
-      }
-    } catch (err) {
-      console.warn('Image upload failed, using local blob:', err)
-      setCurrentImageUrl(imagePreview)
-      setImageFile(null)
-      setImagePreview(null)
-    } finally {
-      setUploading(false)
+  const handleRemoveImage = (index) => {
+    if (images.length <= 1) {
+      alert('Keep at least one image in the gallery.')
+      return
     }
+    setImages((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleSetPrimary = (index) => {
+    if (index === 0) return
+    setImages((prev) => {
+      const copy = [...prev]
+      const [item] = copy.splice(index, 1)
+      copy.unshift(item)
+      return copy
+    })
   }
 
   // Specs & Steps
@@ -213,7 +213,6 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
       return copy
     })
   }
-
   const addSpec = () => setSpecs((prev) => [...prev, { name: '', quantity: '' }])
   const removeSpec = (index) => {
     if (specs.length <= 1) return
@@ -227,7 +226,6 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
       return copy
     })
   }
-
   const addStep = () => setSteps((prev) => [...prev, ''])
   const removeStep = (index) => {
     if (steps.length <= 1) return
@@ -265,14 +263,17 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
       return
     }
 
+    const finalImages = images.length > 0 ? images : ['/guns/pistol.svg']
+
     const payload = {
       name: formData.name.trim(),
-      type: formData.type || (formData.category === 'minuman' ? 'Rifle' : 'Pistol'),
-      caliber: formData.caliber || '9mm',
+      type: formData.type,
+      caliber: formData.caliber,
       price: Number(formData.price) || 500,
       category: formData.category || 'makanan',
       description: formData.description.trim() || `${formData.type} caliber ${formData.caliber}.`,
-      image_url: imagePreview || currentImageUrl || '/guns/pistol.svg',
+      image_url: finalImages[0],
+      images: finalImages, // Task 6.6.7 multi-images
       prep_time: 15,
       cook_time: Number(formData.price) || 500,
       servings: Number(formData.servings) || 1,
@@ -347,44 +348,113 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
       )}
 
       <form onSubmit={handleSubmit} className="entry-form">
-        {/* Imagery Section */}
+        {/* Multi-Image Gallery Section (Task 6.6.7) */}
         <div className="card-box">
-          <h2 className="card-box-title">Visual Asset</h2>
-          <div className="edit-img-wrap">
-            <img
-              src={imagePreview || currentImageUrl}
-              alt="Current hardware"
-              className="edit-current-img"
-            />
-            <div className="edit-img-controls">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <h2 className="card-box-title" style={{ margin: 0 }}>Visual Assets &amp; Gallery</h2>
+            <label htmlFor="edit-gun-image-multiple" className="btn btn--outline btn--sm" style={{ cursor: 'pointer' }}>
+              <Upload size={14} /> Add Image(s)
               <input
-                id="edit-gun-image"
+                id="edit-gun-image-multiple"
                 type="file"
+                multiple
                 accept="image/jpeg,image/jpg,image/png,image/webp"
-                onChange={handleImageChange}
+                onChange={handleAddMultipleFiles}
                 className="hidden-file-input"
               />
-              <label htmlFor="edit-gun-image" className="btn btn--outline btn--sm">
-                <Upload size={14} /> Select New Image File
-              </label>
+            </label>
+          </div>
 
-              {imageFile && (
+          <p className="card-box-desc">
+            Manage multiple product photos. The first image will be used as the primary catalog cover.
+          </p>
+
+          {uploading && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--brass)' }}>
+              <Loader size={16} className="spin" /> Uploading new photo…
+            </div>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px' }}>
+            {images.map((imgUrl, idx) => (
+              <div
+                key={idx}
+                style={{
+                  position: 'relative',
+                  border: idx === 0 ? '2px solid var(--brass)' : '1px solid var(--line)',
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  height: '110px',
+                  background: '#fff',
+                }}
+              >
+                <img
+                  src={imgUrl}
+                  alt={`Hardware photo ${idx + 1}`}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+
+                {idx === 0 ? (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '4px',
+                      left: '4px',
+                      background: 'var(--brass)',
+                      color: '#fff',
+                      fontSize: '0.68rem',
+                      fontWeight: 700,
+                      padding: '2px 5px',
+                      borderRadius: '3px',
+                    }}
+                  >
+                    Cover
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleSetPrimary(idx)}
+                    style={{
+                      position: 'absolute',
+                      bottom: '4px',
+                      left: '4px',
+                      background: 'rgba(24, 34, 44, 0.85)',
+                      color: '#fff',
+                      border: 'none',
+                      fontSize: '0.65rem',
+                      padding: '2px 6px',
+                      borderRadius: '3px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Set Cover
+                  </button>
+                )}
+
                 <button
                   type="button"
-                  className="btn btn--primary btn--sm"
-                  onClick={handleUploadNewImage}
-                  disabled={uploading}
+                  onClick={() => handleRemoveImage(idx)}
+                  style={{
+                    position: 'absolute',
+                    top: '4px',
+                    right: '4px',
+                    width: '22px',
+                    height: '22px',
+                    borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.65)',
+                    color: '#fff',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  title="Remove image"
                 >
-                  {uploading ? (
-                    <>
-                      <Loader size={14} className="spin" /> Uploading…
-                    </>
-                  ) : (
-                    'Upload to MinIO'
-                  )}
+                  <X size={12} />
                 </button>
-              )}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -502,6 +572,7 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
               <Plus size={14} /> Add Spec
             </button>
           </div>
+
           <div className="multi-rows">
             {specs.map((spec, i) => (
               <div key={i} className="multi-row">
@@ -540,6 +611,7 @@ export default function EditGunPage({ gun, gunId, onBack, onSuccess }) {
               <Plus size={14} /> Add Step
             </button>
           </div>
+
           <div className="multi-rows">
             {steps.map((st, i) => (
               <div key={i} className="step-row">

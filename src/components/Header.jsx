@@ -1,12 +1,11 @@
 import { Plus } from 'lucide-react'
 import { useFavorites } from '../hooks/useFavorites'
 
+// About and Contact are now moved to sections inside Profile (Task 6.6.4)
 const NAV_ITEMS = [
   { id: 'Catalog', label: 'Catalog' },
   { id: 'Favorites', label: 'Favorites', hasBadge: true },
   { id: 'Profile', label: 'Profile' },
-  { id: 'About', label: 'About' },
-  { id: 'Contact', label: 'Contact' },
 ]
 
 function Header({ tab, onTab, onNavigateCreate }) {
@@ -15,7 +14,11 @@ function Header({ tab, onTab, onNavigateCreate }) {
 
   return (
     <header className="header">
-      <div className="header-brand-wrap" onClick={() => onTab('Catalog')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div
+        className="header-brand-wrap"
+        onClick={() => onTab('Catalog')}
+        style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+      >
         <div className="header-logo-badge">
           <img src="/logo.png" alt="Bore & Barrel" />
         </div>

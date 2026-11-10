@@ -1518,3 +1518,35 @@
     transform: translateY(0);
   }
 }
+
+
+/* ---------------------------------------------------------------------------
+ * Task 6.6 Enhancements: LazyLoad, Gallery, & Reactions
+ * --------------------------------------------------------------------------- */
+@keyframes skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.lazy-img-skeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #f0f3f5 25%, #e2e7eb 50%, #f0f3f5 75%);
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s infinite;
+}
+
+.lazy-img--loading {
+  opacity: 0.3;
+  filter: blur(4px);
+}
+
+.lazy-img--loaded {
+  opacity: 1;
+  filter: none;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}

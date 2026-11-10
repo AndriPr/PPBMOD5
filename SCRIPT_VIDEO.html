@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Script Video Tugas Pengganti Modul 5 PPB</title>
+  <style>
+    :root {
+      --bg: #0f141c;
+      --card-bg: #18202c;
+      --text: #f0f4f8;
+      --accent: #e5a93b;
+      --action-bg: #223042;
+      --action-text: #64b5f6;
+      --border: #2a384c;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 16px;
+      margin: 0 auto;
+      max-width: 680px;
+      font-size: 18px;
+    }
+    h1 {
+      font-size: 1.5rem;
+      color: var(--accent);
+      text-align: center;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 0.95rem;
+      margin-bottom: 24px;
+    }
+    .box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .box-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+    .timer {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      font-weight: 400;
+    }
+    .action {
+      background: var(--action-bg);
+      border-left: 4px solid var(--action-text);
+      color: var(--action-text);
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-bottom: 14px;
+      font-weight: 600;
+    }
+    .speech {
+      color: #ffffff;
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+    .speech strong {
+      color: #ffd54f;
+    }
+    .meta-box {
+      background: #1e293b;
+      border: 1px dashed var(--accent);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 0.9rem;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>TELEPROMPTER SCRIPT VIDEO</h1>
+  <div class="subtitle">Tugas Pengganti Modul 5 PPB (Bore &amp; Barrel PWA)</div>
+
+  <!-- BAGIAN 1 -->
+  <div class="box">
+    <div class="box-title">
+      <span>1. Pembukaan &amp; Identitas</span>
+      <span class="timer">~45 detik</span>
+    </div>
+    <div class="action">&#128247; AKSI LAYAR: Tampilkan wajah di webcam atau buka halaman web Bore &amp; Barrel di laptop.</div>
+    <div class="speech">
+      "Halo semuanya, selamat malam kepada asisten praktikum Pengembangan Perangkat Bergerak tahun 2026.<br><br>
+      Perkenalkan nama saya <strong>[Nama Lengkap Kamu]</strong>, NIM <strong>[NIM Kamu]</strong>, dari <strong>Shift [Shift Kamu]</strong>, <strong>Kelompok [Kelompok Kamu]</strong>.<br><br>
+      Pada kesempatan kali ini, saya membuat video ini sebagai tugas pengganti praktikum Modul 5 mengenai <strong>React Progressive Web App (PWA) II</strong>.<br><br>
+      Di video ini saya akan mendemonstrasikan langkah percobaan, integrasi database Supabase pribadi, fitur paginasi, lazy load, query caching, dan fitur sharelink. Mari kita mulai."
+    </div>
+  </div>
+
+  <!-- BAGIAN 2 -->
+  <div class="box">
+    <div class="box-title">
+      <span>2. Database Supabase Pribadi</span>
+      <span class="timer">~1.5 menit</span>
+    </div>
+    <div class="action">&#128247; AKSI LAYAR: Buka browser ke dashboard Supabase milikmu (tunjukkan tabel products, reviews, favorites), lalu buka file .env dan src/config/api.js di VS Code.</div>
+    <div class="speech">
+      "Sesuai ketentuan poin ke-5, saya tidak menggunakan shared API modul, melainkan sudah membuat dan mengintegrasikan database Supabase pribadi saya sendiri.<br><br>
+      Bisa dilihat di dashboard Supabase saya, terdapat tiga tabel utama yaitu <strong>products</strong> untuk inventaris katalog, <strong>reviews</strong> untuk ulasan, dan <strong>favorites</strong> untuk bookmark barang.<br><br>
+      Kemudian pada source code di file <strong>.env</strong>, URL dan Anon Key sudah diarahkan ke project Supabase milik saya sendiri.<br><br>
+      Komunikasi datanya ditangani oleh <strong>Axios</strong> di <strong>src/config/api.js</strong>, lengkap dengan interceptor yang otomatis menyematkan apikey dan token otorisasi pada setiap request."
+    </div>
+  </div>
+
+  <!-- BAGIAN 3 -->
+  <div class="box">
+    <div class="box-title">
+      <span>3. Langkah Percobaan &amp; PWA</span>
+      <span class="timer">~1.5 menit</span>
+    </div>
+    <div class="action">&#128247; AKSI LAYAR: Buka web di browser. Tekan F12 -> tab Application -> klik "Service Workers" dan "Manifest". Tunjukkan banner install PWA di kanan bawah.</div>
+    <div class="speech">
+      "Selanjutnya untuk langkah percobaan sesuai instruksi modul, aplikasi ini dikembangkan dengan ReactJS dan build tool Vite.<br><br>
+      Untuk kapabilitas PWA, proyek menggunakan <strong>vite-plugin-pwa</strong>.<br><br>
+      Jika kita inspect di tab <strong>Application</strong>, bisa kita lihat <strong>Service Worker</strong> sudah aktif dan terdaftar dengan baik. Pada tab <strong>Manifest</strong>, metadata seperti nama 'Bore &amp; Barrel', warna tema, dan icon aplikasi 192 serta 512 piksel sudah terpasang.<br><br>
+      Di pojok bawah juga tersedia badge instalasi PWA untuk memasang aplikasi ke home screen perangkat desktop maupun smartphone secara luring."
+    </div>
+  </div>
+
+  <!-- BAGIAN 4 -->
+  <div class="box">
+    <div class="box-title">
+      <span>4. Demonstrasi Paginasi</span>
+      <span class="timer">~1.5 menit</span>
+    </div>
+    <div class="action">&#128247; AKSI LAYAR: Di halaman katalog, scroll ke bawah ke tombol navigasi angka [1] [2] dan [Next]. Klik halaman 2, lalu klik halaman 1. Buka file src/pages/Catalog.jsx di VS Code.</div>
+    <div class="speech">
+      "Untuk ketentuan poin ke-4 yaitu <strong>Paginasi</strong>.<br><br>
+      Pada katalog ini, saya membatasi tampilan menjadi <strong>6 produk per halaman</strong> agar rendering antarmuka tetap ringan dan cepat.<br><br>
+      Bisa kita lihat di bawah katalog terdapat tombol paginasi: Previous, nomor halaman, dan Next. Saat saya klik halaman kedua, daftar produk langsung berganti dengan cepat tanpa reload seluruh halaman.<br><br>
+      Pada kodenya di <strong>src/pages/Catalog.jsx</strong>, saya menggunakan state <strong>currentPage</strong> dan <strong>itemsPerPage</strong>. Data produk yang tampil dihitung secara dinamis menggunakan <strong>useMemo</strong> dengan teknik slicing array berdasarkan halaman aktif."
+    </div>
+  </div>
+
+  <!-- BAGIAN 5 -->
+  <div class="box">
+    <div class="box-title">
+      <span>5. Pembuktian Lazy Load</span>
+      <span class="timer">~2 menit</span>
+    </div>
+    <div class="action">&#128247; AKSI LAYAR: Tekan F12 -> tab Network -> klik filter "Img" -> reload halaman. Tunjukkan request gambar hanya yang terlihat di atas. Scroll ke bawah pelan-pelan, perlihatkan request gambar baru muncul bertahap di Network tab.</div>
+    <div class="speech">
+      "Masuk ke poin ke-2, yaitu pembuktian <strong>Lazy Load</strong> pada gambar katalog.<br><br>
+      Tujuannya adalah menunda pemuatan gambar sampai elemen tersebut benar-benar muncul di layar saat pengguna melakukan scroll.<br><br>
+      Mari kita amati di tab Network dengan filter <strong>Img</strong>:<br>
+      Saat halaman baru dimuat, browser hanya meminta gambar untuk produk yang berada di area atas.<br><br>
+      Ketika saya mulai scroll ke bawah secara bertahap... perhatikan di tab Network, request gambar baru dieksekusi satu per satu sesuai posisi kartu di layar.<br><br>
+      Implementasinya ada di komponen <strong>src/components/common/LazyImage.jsx</strong> yang menggunakan <strong>IntersectionObserver</strong> untuk memantau kemunculan elemen di viewport sebelum tag gambar dimuat."
+    </div>
+  </div>
+
+  <!-- BAGIAN 6 -->
+  <div class="box">
+    <div class="box-title">
+      <span>6. Pembuktian Query Caching</span>
+      <span class="timer">~1.5 menit</span>
+    </div>
+    <div class="action">&#128247; AKSI LAYAR: Di tab Network (pastikan "Disable cache" tidak dicentang), reload halaman. Sorot kolom "Size" yang tertulis "(disk cache)" atau "(ServiceWorker)". Tunjukkan file src/utils/queryCache.js dan vite.config.js.</div>
+    <div class="speech">
+      "Masih di poin ke-2, selanjutnya adalah <strong>Query Caching</strong>.<br><br>
+      Caching bertujuan menyimpan hasil permintaan data dan aset agar akses berikutnya tidak membebani server dan responsnya seketika.<br><br>
+      Buktinya bisa kita lihat di tab Network:<br>
+      Setelah gambar pernah dimuat, ketika halaman saya reload ulang, ukuran pada kolom Size menampilkan status <strong>(disk cache)</strong> atau <strong>from ServiceWorker</strong>. Ini artinya gambar langsung disajikan dari memori lokal komputer tanpa download ulang dari server.<br><br>
+      Di sisi kode, hal ini diatur oleh runtime caching Workbox di <strong>vite.config.js</strong> dengan strategi <strong>CacheFirst</strong>, serta modul <strong>src/utils/queryCache.js</strong> yang meng-cache respon JSON dari API selama 5 menit."
+    </div>
+  </div>
+
+  <!-- BAGIAN 7 -->
+  <div class="box">
+    <div class="box-title">
+      <span>7. Penjelasan Kode Sharelink</span>
+      <span class="timer">~1.5 menit</span>
+    </div>
+    <div class="action">&#128247; AKSI LAYAR: Klik tombol Share (ikon share) pada salah satu produk -> muncul notifikasi "Link Copied!". Buka tab browser baru, paste linknya (misal: ?gun=1) -> tekan Enter -> tunjukkan halaman detail produk itu langsung otomatis terbuka. Buka kodenya di src/App.jsx.</div>
+    <div class="speech">
+      "Ketentuan poin ke-3 adalah <strong>Sharelink Button</strong> untuk setiap katalog.<br><br>
+      Di setiap kartu produk pada <strong>GunCard.jsx</strong> dan halaman detail, terdapat tombol Share. Saat diklik, sistem membuat link spesifik berformat parameter <strong>?gun=ID_PRODUK</strong> dan menyalinnya ke clipboard.<br><br>
+      Fitur ini sudah mendukung deep-linking. Sebagai contoh, ketika link ini saya buka di tab baru, aplikasi langsung otomatis mendeteksi parameter tersebut dan menampilkan halaman detail barang yang bersangkutan.<br><br>
+      Kodenya ada di <strong>src/App.jsx</strong> pada hook <strong>useEffect</strong>, di mana sistem membaca <strong>URLSearchParams</strong> saat inisialisasi aplikasi. Jika ada parameter 'gun', sistem langsung mengambil datanya dan mengarahkan tampilan ke mode detail."
+    </div>
+  </div>
+
+  <!-- BAGIAN 8 -->
+  <div class="box">
+    <div class="box-title">
+      <span>8. Penutup</span>
+      <span class="timer">~30 detik</span>
+    </div>
+    <div class="action">&#128247; AKSI LAYAR: Tampilkan kembali halaman muka aplikasi atau webcam.</div>
+    <div class="speech">
+      "Sekian presentasi dan demonstrasi tugas pengganti praktikum Modul 5 mengenai Progressive Web App dari saya. Seluruh poin mulai dari integrasi database mandiri, PWA, paginasi, lazy load, query caching, hingga fitur sharelink telah berhasil diimplementasikan dengan baik.<br><br>
+      Terima kasih banyak atas perhatian dari kakak-kakak asisten laboratorium. Selamat malam dan wassalamu’alaikum warahmatullahi wabarakatuh."
+    </div>
+  </div>
+
+  <div class="meta-box">
+    <strong>Format Upload YouTube:</strong><br>
+    Judul: <code>Tugas Pengganti Praktikum PPB Modul 5 - [Nama Kamu] - [Shift] - [Kelompok]</code><br><br>
+    <strong>Format Komentar Pengumpulan:</strong><br>
+    <code>NAMA_KELXX_LINK YOUTUBE</code>
+  </div>
+
+</body>
+</html>
